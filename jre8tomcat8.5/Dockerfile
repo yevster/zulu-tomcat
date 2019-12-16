@@ -1,15 +1,14 @@
-ARG TOMCAT_VERSION=8.5.41
-ARG JDK_VERSION=8u232
-ARG APP_FILE=ROOT.war
+ARG JDK_VERSION=8u212
 
 FROM azul/zulu-openjdk-alpine:${JDK_VERSION}
+ARG APP_FILE=ROOT.war
+ARG TOMCAT_VERSION=8.5.41
+ARG TOMCAT_MAJOR=8
+ARG JDK_VERSION
 
 ENV PORT 8080
-
 ENV PATH /usr/local/tomcat/bin:$PATH
 
-# Remove the sample webapps provided by Tomcat
-RUN rm -rf /usr/local/tomcat/webapps/*
 
 RUN apk add --update openssh-server bash openrc \
         && rm -rf /var/cache/apk/* \
@@ -22,12 +21,19 @@ RUN apk add --update openssh-server bash openrc \
                  /etc/init.d/modules-load \
                  /etc/init.d/modloop \
         # Install Tomcat
-        && wget -O /tmp/apache-tomcat-$TOMCAT_VERSION.tar.gz https://archive.apache.org/dist/tomcat/tomcat-$TOMCAT_MAJOR/v$TOMCAT_VERSION/bin/apache-tomcat-$TOMCAT_VERSION.tar.gz --no-verbose \
-        && tar xvzf /tmp/apache-tomcat-$TOMCAT_VERSION.tar.gz -C /tmp \
-        && mv /tmp/apache-tomcat-$TOMCAT_VERSION /usr/local/tomcat \
-        && rm -rf /usr/local/tomcat/webapps \
-        && rm -f /tmp/apache-tomcat-$TOMCAT_VERSION.tar.gz
+        && wget -O /tmp/apache-tomcat-${TOMCAT_VERSION}.tar.gz https://archive.apache.org/dist/tomcat/tomcat-$TOMCAT_MAJOR/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz --no-verbose \
+        && mkdir /usr/local/tomcat \ 
+        && tar xvzf /tmp/apache-tomcat-${TOMCAT_VERSION}.tar.gz -C /usr/local/tomcat --strip-components 1 \
+        && rm -f /tmp/apache-tomcat-${TOMCAT_VERSION}.tar.gz \
+         # Remove the sample webapps provided by Tomcat
+        && rm -rf /usr/local/tomcat/webapps/* 
+
         
+COPY $APP_FILE /usr/local/tomcat/webapps/ROOT.war      
+RUN cd /usr/local/tomcat/webapps/ \ 
+        && unzip ROOT.war
+
+
 EXPOSE 8080
-COPY $APP_FILE /usr/loca/tomcat/webapps/ROOT.war
+EXPOSE 8443
 CMD ["/usr/local/tomcat/bin/catalina.sh", "run"]
