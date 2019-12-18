@@ -6,7 +6,6 @@ ARG TOMCAT_VERSION=8.5.41
 ARG TOMCAT_MAJOR=8
 ARG JDK_VERSION
 
-ENV PORT 8080
 ENV PATH /usr/local/tomcat/bin:$PATH
 
 
@@ -33,7 +32,6 @@ COPY $APP_FILE /usr/local/tomcat/webapps/ROOT.war
 RUN cd /usr/local/tomcat/webapps/ \ 
         && unzip ROOT.war
 
-
 EXPOSE 8080
-EXPOSE 8443
+
 CMD ["/usr/local/tomcat/bin/catalina.sh", "run"]
