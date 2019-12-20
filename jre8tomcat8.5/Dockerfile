@@ -4,10 +4,11 @@ FROM azul/zulu-openjdk-alpine:${JDK_VERSION}
 ARG APP_FILE=ROOT.war
 ARG TOMCAT_VERSION=8.5.41
 ARG TOMCAT_MAJOR=8
-ARG JDK_VERSION
 
 ENV PATH /usr/local/tomcat/bin:$PATH
 
+# Required to make Java 8 obey container resource limits
+ENV JAVA_OPTS "-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
 
 RUN apk add --update openssh-server bash openrc \
         && rm -rf /var/cache/apk/* \
